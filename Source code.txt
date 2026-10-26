@@ -1,0 +1,75 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+// --- Sensor setup ---
+#define DHTPIN 2
+#define DHTTYPE DHT11
+#define GAS_SENSOR_PIN A0
+#define LED_PIN 7
+#define GAS_THRESHOLD 800
+// --- Object creation ---
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Change 0x27 to 0x3F if not detected
+DHT dht(DHTPIN, DHTTYPE); 22
+Adafruit_MPU6050 mpu;
+void setup() { Serial.begin(9600); 
+lcd.begin(16, 2); 
+lcd.backlight();
+pinMode(LED_PIN, OUTPUT);
+// Initialize sensors dht.begin(); 
+if 
+(!mpu.begin()) {
+Serial.println("MPU6050 not found!"); 
+lcd.setCursor(0, 0); lcd.print("MPU6050 Error"); 
+while (1); }
+lcd.setCursor(0, 0); lcd.print("Gas+DHT+MPU6050"); delay(2000); 
+lcd.clear(); }
+void loop() { // --- Gas Sensor --int gasValue = 
+analogRead(GAS_SENSOR_PIN); 23
+// --- DHT11 Sensor --float temp = 
+dht.readTemperature(); float hum = dht.readHumidity();
+// --- MPU6050 Sensor --
+sensors_event_t a, g, tempMpu; 
+mpu.getEvent(&a, &g, &tempMpu); 
+// --- Display on Serial Monitor --
+Serial.print("Gas: "); 
+Serial.print(gasValue);
+Serial.print("\tTemp: "); Serial.print(temp);
+Serial.print(" C\tHum: "); Serial.print(hum);
+Serial.print(" %\tAccel(X,Y,Z): "); Serial.print(a.acceleration.x); 
+Serial.print(", ");
+Serial.print(a.acceleration.y); Serial.print(", ");
+Serial.println(a.acceleration.z); 24
+// --- LED and LCD Display --if (gasValue 
+> GAS_THRESHOLD) { 
+digitalWrite(LED_PIN, HIGH);
+} else { digitalWrite(LED_PIN, 
+LOW);
+}
+// --- LCD Display Cycle ---
+lcd.clear();
+lcd.setCursor(0, 0); 
+lcd.print("Gas: "); 
+lcd.print(gasValue); 
+lcd.setCursor(0, 1);
+if (gasValue > GAS_THRESHOLD) lcd.print("Status: ALERT!!!"); else 
+lcd.print("Status: Normal "); delay(2000);
+lcd.clear(); lcd.setCursor(0, 
+0); lcd.print("Temp:"); 25
+lcd.print(temp); 
+lcd.print("C"); 
+lcd.setCursor(0, 1); 
+lcd.print("Hum:"); 
+lcd.print(hum); 
+lcd.print("%"); 
+delay(2000);
+lcd.clear(); lcd.setCursor(0, 0); 
+lcd.print("X:"); 
+lcd.print(a.acceleration.x, 1); 
+lcd.setCursor(0, 1); 
+lcd.print("Y:"); 
+lcd.print(a.acceleration.y, 1); 
+lcd.print(" Z:"); 
+lcd.print(a.acceleration.z, 1); 
+delay(2000); 26
